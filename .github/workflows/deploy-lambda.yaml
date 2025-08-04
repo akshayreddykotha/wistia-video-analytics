@@ -18,7 +18,7 @@ jobs:
 
       - name: Zip Lambda Function
         run: |
-          zip lambda_function.zip tests/hello_lambda/lambda_function.py
+          zip lambda_function.zip lambda_function.py
       
       - name: List files for debug
         run: ls -al
