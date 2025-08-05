@@ -24,6 +24,9 @@ jobs:
         run: |
           pip install -t ingestion/ -r requirements.txt
 
+      - name: List ingestion contents
+        run: ls -l ingestion/
+
       - name: Zip Lambda function
         run: |
           cd ingestion
