@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - ingestion/ingest_wistia_media.py
-      - .github/workflows/deploy-lambda-ingest-media.yml
+      - .github/workflows/deploy-lambda-ingest-media.yaml
 
 jobs:
   deploy:
@@ -27,14 +27,14 @@ jobs:
       - name: Zip Lambda function
         run: |
           cd ingestion
-          zip -r function.zip .
+          zip -r ingest_wistia_media.zip .
 
       - name: Deploy to Lambda
         uses: appleboy/lambda-action@master
         with:
           function_name: ingestionWistiaMedia
           aws_region: ${{ secrets.AWS_REGION }}
-          zip_file: ingestion/function.zip
+          zip_file: ingestion/ingest_wistia_media.zip
           role: arn:aws:iam::564496105175:role/lambda-execution-role
           handler: ingest_wistia_media.lambda_handler
           runtime: python3.9
