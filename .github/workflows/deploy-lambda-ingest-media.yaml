@@ -29,11 +29,13 @@ jobs:
           cd ingestion
           zip -r ingest_wistia_media.zip .
 
-      - name: Deploy to Lambda
+      - name: Deploy to AWS Lambda
         uses: appleboy/lambda-action@master
         with:
-          function_name: ingestionWistiaMedia
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
+          function_name: ingestionWistiaMedia
           zip_file: ingestion/ingest_wistia_media.zip
           role: arn:aws:iam::564496105175:role/lambda-execution-role
           handler: ingest_wistia_media.lambda_handler
