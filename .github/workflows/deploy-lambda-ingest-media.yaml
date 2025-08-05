@@ -33,7 +33,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           function_name: ingestionWistiaMedia
-          region: us-west-2
+          aws_region: ${{ secrets.AWS_REGION }}
           zip_file: ingestion/function.zip
           role: arn:aws:iam::564496105175:role/lambda-execution-role
           handler: ingest_wistia_media.lambda_handler
