@@ -30,7 +30,7 @@ jobs:
       - name: Zip Lambda function
         run: |
           cd ingestion/ingest_visitors
-          zip -r lambda_function.zip
+          zip -r lambda_function.zip .
 
       - name: Deploy to AWS Lambda
         uses: appleboy/lambda-action@master
