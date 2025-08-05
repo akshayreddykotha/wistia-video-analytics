@@ -2,12 +2,14 @@ import json
 import boto3
 import os
 import requests
-from io import StringIO
+from io import StringIO, BytesIO
 from datetime import datetime
 
 # Wistia API constants
 BASE_URL = "https://api.wistia.com/v1/medias"
 WISTIA_API_TOKEN = os.getenv("WISTIA_API_TOKEN")
+if not WISTIA_API_TOKEN:
+    raise Exception("Missing WISTIA_API_TOKEN environment variable")
 
 # AWS S3 bucket
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "ak-wistia")  # fallback if not set
@@ -44,7 +46,7 @@ def fetch_all_media_metadata(per_page=100, max_pages=3):
 
 def upload_json_to_s3(data, bucket, filename):
     s3 = boto3.client("s3")
-    json_buffer = StringIO()
+    json_buffer = BytesIO()
     json.dump(data, json_buffer, indent=2)
     json_buffer.seek(0)
 
