@@ -4,7 +4,7 @@ name: Deploy ingest_wistia_visitors to Lambda
 on:
   push:
     paths:
-      - ingestion/ingest_wistia_visitors.py
+      - ingestion/ingest_visitors/lambda_function.py
       - .github/workflows/deploy-lambda-ingest-visitors.yaml
 
 jobs:
@@ -22,15 +22,15 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -t ingestion/ -r requirements.txt
+          pip install -t ingestion/ingest_visitors/ -r requirements.txt
 
       - name: List ingestion contents
-        run: ls -l ingestion/
+        run: ls -l ingestion/ingest_visitors/
 
       - name: Zip Lambda function
         run: |
           cd ingestion
-          zip -r ingest_wistia_visitors.zip .
+          zip -r lambda_function.zip .
 
       - name: Deploy to AWS Lambda
         uses: appleboy/lambda-action@master
@@ -39,8 +39,8 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
           function_name: ingestionWistiaVisitors
-          zip_file: ingestion/ingest_wistia_visitors.zip
+          zip_file: ingestion/ingest_visitors/lambda_function.zip
           role: arn:aws:iam::564496105175:role/lambda-execution-role
-          handler: ingest_wistia_visitors.lambda_handler
+          handler: lambda_function.lambda_handler
           runtime: python3.9
           environment: "S3_BUCKET=ak-wistia, WISTIA_API_TOKEN=${{ secrets.WISTIA_API_TOKEN }}"
