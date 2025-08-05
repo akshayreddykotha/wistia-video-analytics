@@ -1,0 +1,43 @@
+# .github/workflows/deploy_lambda.yml
+name: Deploy ingest_wistia_media to Lambda
+
+on:
+  push:
+    paths:
+      - ingestion/ingest_wistia_media.py
+      - .github/workflows/deploy-lambda-ingest-media.yml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install -t ingestion/ -r requirements.txt
+
+      - name: Zip Lambda function
+        run: |
+          cd ingestion
+          zip -r function.zip .
+
+      - name: Deploy to Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          function_name: ingestionWistiaMedia
+          region: us-west-2
+          zip_file: ingestion/function.zip
+          role: arn:aws:iam::564496105175:role/lambda-execution-role
+          handler: ingest_wistia_media.lambda_handler
+          runtime: python3.9
+          environment: |
+            S3_BUCKET=ak-wistia
+            WISTIA_API_TOKEN=${{ secrets.WISTIA_API_TOKEN }}
