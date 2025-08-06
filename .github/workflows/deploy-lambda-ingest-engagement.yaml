@@ -1,0 +1,46 @@
+# .github/workflows/deploy_lambda.yml
+name: Deploy ingest_wistia_engagement to Lambda
+
+on:
+  push:
+    paths:
+      - ingestion/ingest_engagement/lambda_function.py
+      - .github/workflows/deploy-lambda-ingest-engagement.yaml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install -t ingestion/ingest_engagement/ -r requirements.txt
+
+      - name: List ingestion contents
+        run: ls -l ingestion/ingest_engagement/
+
+      - name: Zip Lambda function
+        run: |
+          cd ingestion/ingest_engagement
+          zip -r lambda_function.zip .
+
+      - name: Deploy to AWS Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          function_name: ingestionWistiaEngagement
+          zip_file: ingestion/ingest_engagement/lambda_function.zip
+          role: arn:aws:iam::564496105175:role/lambda-execution-role
+          handler: lambda_function.lambda_handler
+          runtime: python3.9
+          environment: "S3_BUCKET=ak-wistia, WISTIA_API_TOKEN=${{ secrets.WISTIA_API_TOKEN }}"
