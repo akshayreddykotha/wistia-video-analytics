@@ -53,6 +53,17 @@ def upload_json_to_s3(data, bucket, filename):
     s3.upload_fileobj(json_buffer, bucket, filename)
     print(f"Uploaded to S3: s3://{bucket}/{filename}")
 
+def save_latest_filename_pointer(bucket, latest_key, pointer_key="raw_data/media/s3_keys/latest_media_file.json"):
+    s3 = boto3.client("s3")
+    pointer_data = {"latest_s3_key": latest_key}
+    s3.put_object(
+        Bucket=bucket,
+        Key=pointer_key,
+        Body=json.dumps(pointer_data),
+        ContentType="application/json"
+    )
+    print(f"Saved latest pointer to s3://{bucket}/{pointer_key}")
+
 def lambda_handler(event, context):
     try:
         media_data = fetch_all_media_metadata()
@@ -60,6 +71,7 @@ def lambda_handler(event, context):
         filename = f"raw_data/media/media_metadata_{timestamp}.json"
 
         upload_json_to_s3(media_data, S3_BUCKET_NAME, filename)
+        save_latest_filename_pointer(S3_BUCKET_NAME, filename)
 
         return {
             "statusCode": 200,
