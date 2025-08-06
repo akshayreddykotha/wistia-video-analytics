@@ -8,7 +8,7 @@ from datetime import datetime
 from urllib.parse import urljoin
 
 # Constants
-BASE_ENGAGEMENT_ENDPOINT = "https://api.wistia.com/v1/medias"
+BASE_ENGAGEMENT_ENDPOINT = "https://api.wistia.com/v1/stats/medias"
 WISTIA_API_TOKEN = os.getenv("WISTIA_API_TOKEN")
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "ak-wistia")
 
