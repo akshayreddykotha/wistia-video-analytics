@@ -1,4 +1,4 @@
-# Ingest Visitors Data
+# Ingest Events Data
 import json
 import boto3
 import os
@@ -17,12 +17,12 @@ S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "ak-wistia")
 MEDIA_IDS_FILTER = ["gskhw4w4lm", "v08dlrgr7v"]   # comma-separated media ids, optional
 
 # Settings
-# MAX_PAGES = 5
+MAX_PAGES = 5
 PER_PAGE = 100
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # seconds
 
-def fetch_all_events(per_page=PER_PAGE, media_id=None, received_after=None):
+def fetch_all_events(per_page=PER_PAGE, max_pages=MAX_PAGES, media_id=None, received_after=None):
     page = 1
     all_events = []
 
@@ -30,8 +30,8 @@ def fetch_all_events(per_page=PER_PAGE, media_id=None, received_after=None):
         "Authorization": f"Bearer {WISTIA_API_TOKEN}"
     }
 
-    while True:
-        print(f"Fetching page {page}...")
+    while page <= MAX_PAGES:
+        print(f"Fetching page {page}... for {media_id}")
         try:
             response = requests.get(
                 BASE_URL,
@@ -84,6 +84,7 @@ def lambda_handler(event, context):
 
         # Pull only events received in last 24 hours (for incremental pull)
         received_after = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        print(f"Looking for records after: {received_after}")
         for media_id in MEDIA_IDS_FILTER:
             events = fetch_all_events(media_id=media_id, received_after=received_after)
             total_events.extend(events)
