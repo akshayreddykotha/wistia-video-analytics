@@ -23,7 +23,8 @@ def fetch_all_visitors(per_page=100, max_pages=3):
         "Authorization": f"Bearer {WISTIA_API_TOKEN}"
     }
 
-    while page <= max_pages:
+    # while page <= max_pages:
+    while True:
         print(f"Fetching page {page}...")
         response = requests.get(
             BASE_URL,
