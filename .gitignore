@@ -1,6 +1,7 @@
 # files
 ingestion/config.py
 tests/
+raw_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

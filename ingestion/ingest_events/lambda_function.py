@@ -1,0 +1,108 @@
+# Ingest Visitors Data
+import json
+import boto3
+import os
+import requests
+from io import BytesIO
+from datetime import datetime, timezone
+import time
+
+# Constants
+BASE_URL = "https://api.wistia.com/v1/stats/events.json"
+WISTIA_API_TOKEN = os.getenv("WISTIA_API_TOKEN")
+if not WISTIA_API_TOKEN:
+    raise Exception("Missing WISTIA_API_TOKEN environment variable")
+
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "ak-wistia")
+MEDIA_IDS_FILTER = ["gskhw4w4lm", "v08dlrgr7v"]   # comma-separated media ids, optional
+
+# Settings
+# MAX_PAGES = 5
+PER_PAGE = 100
+MAX_RETRIES = 3
+RETRY_DELAY = 2  # seconds
+
+def fetch_all_events(per_page=PER_PAGE, media_id=None, received_after=None):
+    page = 1
+    all_events = []
+
+    headers = {
+        "Authorization": f"Bearer {WISTIA_API_TOKEN}"
+    }
+
+    while True:
+        print(f"Fetching page {page}...")
+        try:
+            response = requests.get(
+                BASE_URL,
+                params={"page": page, "per_page": per_page, "media_id": media_id },
+                headers=headers
+            )
+
+            if response.status_code != 200:
+                print(f"Error {response.status_code}: {response.text}")
+                break
+
+            batch = response.json()
+            if not batch:
+                print("No more data.")
+                break
+
+            # Filter by media_id if provided
+            if media_id:
+                batch = [event for event in batch]
+
+            # Filter by received_at if provided
+            if received_after:
+                batch = [event for event in batch if event.get("received_at") and
+                         datetime.fromisoformat(event["received_at"].replace("Z", "+00:00")) > received_after]
+
+            all_events.extend(batch)
+            page += 1
+
+        except Exception as e:
+            print(f"Exception on page {page}: {e}")
+            retries = 0
+            while retries < MAX_RETRIES:
+                print(f"Retrying ({retries + 1}/{MAX_RETRIES})...")
+                time.sleep(RETRY_DELAY)
+                retries += 1
+
+    return all_events
+
+def upload_json_to_s3(data, bucket, filename):
+    s3 = boto3.client("s3")
+    json_str = json.dumps(data, indent=2)
+    json_buffer = BytesIO(json_str.encode("utf-8"))
+    s3.upload_fileobj(json_buffer, bucket, filename)
+    print(f"Uploaded to S3: s3://{bucket}/{filename}")
+
+def lambda_handler(event, context):
+    total_events = []
+    try:
+        print("Starting Wistia Events Ingestion Lambda...")
+
+        # Pull only events received in last 24 hours (for incremental pull)
+        received_after = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        for media_id in MEDIA_IDS_FILTER:
+            events = fetch_all_events(media_id=media_id, received_after=received_after)
+            total_events.extend(events)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"raw_data/events/wistia_events_{timestamp}.json"
+
+        upload_json_to_s3(total_events, S3_BUCKET_NAME, filename)
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": f"Fetched {len(total_events)} events and uploaded to S3.",
+                "s3_key": filename
+            })
+        }
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
