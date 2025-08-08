@@ -26,7 +26,7 @@ df_raw = spark.read.json(raw_path, multiLine=True)
 df_dim_media = df_raw.select(
     col("id").alias("media_id"),
     col("name").alias("title"),
-    col("thumbnail[0].url").alias("url"),  # Example URL
+    col("thumbnail.url").alias("url"),  # Example URL
     col("duration").alias("duration"),  # Adjust if your API field differs
     col("created").alias("created_at"),
     col("updated").alias("updated_at"),
