@@ -22,7 +22,7 @@ jobs:
 
       - name: Upload Glue Script to S3
         run: |
-          aws s3 cp glue_jobs/glue_dim_media.py s3://ak-wistia/scripts/glue_dim_media.py
+          aws s3 cp transformations/scripts/glue_dim_media.py s3://ak-wistia/scripts/glue_dim_media.py
 
       - name: Update Glue Job
         run: |
