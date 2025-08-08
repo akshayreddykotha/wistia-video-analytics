@@ -1,0 +1,45 @@
+name: Deploy AWS Glue Job
+
+on:
+  push:
+    paths:
+      - transformations/scripts/glue_dim_media.py
+      - .github/workflows/deploy-glue-transform-dim-media.yaml
+
+jobs:
+  deploy-glue-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload Glue Script to S3
+        run: |
+          aws s3 cp glue_jobs/glue_dim_media.py s3://ak-wistia/scripts/glue_dim_media.py
+
+      - name: Update Glue Job
+        run: |
+          aws glue update-job \
+            --job-name transformWistiaMedia \
+            --job-update '{
+              "Role": "arn:aws:iam::564496105175:role/glue-execution-role-wistia",
+              "Command": {
+                "Name": "glueetl",
+                "ScriptLocation": "s3://ak-wistia/scripts/glue_dim_media.py",
+                "PythonVersion": "3"
+              },
+              "DefaultArguments": {
+                "--SOURCE_BUCKET": "ak-wistia",
+                "--TARGET_BUCKET": "ak-wistia"
+              },
+              "GlueVersion": "5.0",
+              "WorkerType": "G.1X",
+              "NumberOfWorkers": 2
+            }'
