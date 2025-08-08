@@ -19,7 +19,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # ====== Read Raw JSON from S3 ======
-raw_path = f"s3://{source_bucket}/raw/media/"
+raw_path = f"s3://{source_bucket}/raw_data/media/"
 df_raw = spark.read.json(raw_path, multiLine=True)
 
 # ====== Flatten & Select Required Columns ======
