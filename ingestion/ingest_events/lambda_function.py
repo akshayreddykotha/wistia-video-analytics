@@ -25,12 +25,12 @@ RETRY_DELAY = 2  # seconds
 def fetch_all_events(per_page=PER_PAGE, max_pages=MAX_PAGES, media_id=None, received_after=None):
     page = 1
     all_events = []
-
+    batch_length = 1
     headers = {
         "Authorization": f"Bearer {WISTIA_API_TOKEN}"
     }
 
-    while page <= MAX_PAGES:
+    while batch_length > 0:
         print(f"Fetching page {page}... for {media_id}")
         try:
             response = requests.get(
@@ -56,8 +56,12 @@ def fetch_all_events(per_page=PER_PAGE, max_pages=MAX_PAGES, media_id=None, rece
             if received_after:
                 batch = [event for event in batch if event.get("received_at") and
                          datetime.fromisoformat(event["received_at"].replace("Z", "+00:00")) > received_after]
-
+            
+            # Find out the number of elements after filters
+            batch_length = len(batch)
+            
             all_events.extend(batch)
+
             page += 1
 
         except Exception as e:
