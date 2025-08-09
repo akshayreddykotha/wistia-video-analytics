@@ -43,3 +43,28 @@ jobs:
               "WorkerType": "G.1X",
               "NumberOfWorkers": 2
             }'
+
+      - name: Create or Update Glue Crawler
+        run: |
+          # Check if crawler exists
+          if aws glue get-crawler --name crawler-dim-media >/dev/null 2>&1; then
+            echo "Updating existing Glue crawler..."
+            aws glue update-crawler \
+              --name crawler-dim-media \
+              --role arn:aws:iam::564496105175:role/glue-execution-role-wistia \
+              --database-name ak_wistia_video \
+              --targets '{"S3Targets":[{"Path":"s3://ak-wistia/processed/dim_media/"}]}' \
+              --schema-change-policy '{"UpdateBehavior":"UPDATE_IN_DATABASE","DeleteBehavior":"LOG"}'
+          else
+            echo "Creating new Glue crawler..."
+            aws glue create-crawler \
+              --name crawler-dim-media \
+              --role arn:aws:iam::564496105175:role/glue-execution-role-wistia \
+              --database-name ak_wistia_video \
+              --targets '{"S3Targets":[{"Path":"s3://ak-wistia/processed/dim_media/"}]}' \
+              --schema-change-policy '{"UpdateBehavior":"UPDATE_IN_DATABASE","DeleteBehavior":"LOG"}'
+          fi
+
+      - name: Run Glue Crawler
+        run: |
+          aws glue start-crawler --name crawler-dim-media
