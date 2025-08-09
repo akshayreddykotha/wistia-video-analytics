@@ -28,7 +28,7 @@ jobs:
       - name: Update Glue Job
         run: |
           aws glue update-job \
-            --job-name transformWistiaMedia \
+            --job-name transformWistiaEvents \
             --job-update '{
               "Role": "arn:aws:iam::564496105175:role/glue-execution-role-wistia",
               "Command": {
