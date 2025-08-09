@@ -1,0 +1,71 @@
+# Transform Fact Events
+name: Deploy AWS Glue Job
+
+on:
+  push:
+    paths:
+      - transformations/scripts/glue_fact_events.py
+      - .github/workflows/deploy-glue-transform-fact-events.yaml
+
+jobs:
+  deploy-glue-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload Glue Script to S3
+        run: |
+          aws s3 cp transformations/scripts/glue_fact_events.py s3://ak-wistia/scripts/glue_fact_events.py
+
+      - name: Update Glue Job
+        run: |
+          aws glue update-job \
+            --job-name transformWistiaMedia \
+            --job-update '{
+              "Role": "arn:aws:iam::564496105175:role/glue-execution-role-wistia",
+              "Command": {
+                "Name": "glueetl",
+                "ScriptLocation": "s3://ak-wistia/scripts/glue_fact_events.py",
+                "PythonVersion": "3"
+              },
+              "DefaultArguments": {
+                "--SOURCE_BUCKET": "ak-wistia",
+                "--TARGET_BUCKET": "ak-wistia"
+              },
+              "GlueVersion": "5.0",
+              "WorkerType": "G.1X",
+              "NumberOfWorkers": 2
+            }'
+
+      - name: Create or Update Glue Crawler
+        run: |
+          # Check if crawler exists
+          if aws glue get-crawler --name crawler-fact-events >/dev/null 2>&1; then
+            echo "Updating existing Glue crawler..."
+            aws glue update-crawler \
+              --name crawler-fact-events \
+              --role arn:aws:iam::564496105175:role/glue-execution-role-wistia \
+              --database-name ak_wistia_video \
+              --targets '{"S3Targets":[{"Path":"s3://ak-wistia/processed/fact_events/"}]}' \
+              --schema-change-policy '{"UpdateBehavior":"UPDATE_IN_DATABASE","DeleteBehavior":"LOG"}'
+          else
+            echo "Creating new Glue crawler..."
+            aws glue create-crawler \
+              --name crawler-fact-events \
+              --role arn:aws:iam::564496105175:role/glue-execution-role-wistia \
+              --database-name ak_wistia_video \
+              --targets '{"S3Targets":[{"Path":"s3://ak-wistia/processed/fact_events/"}]}' \
+              --schema-change-policy '{"UpdateBehavior":"UPDATE_IN_DATABASE","DeleteBehavior":"LOG"}'
+          fi
+
+      - name: Run Glue Crawler
+        run: |
+          aws glue start-crawler --name crawler-fact-events
