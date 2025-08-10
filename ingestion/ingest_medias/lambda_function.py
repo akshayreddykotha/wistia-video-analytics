@@ -15,7 +15,7 @@ if not WISTIA_API_TOKEN:
 # AWS S3 bucket
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "ak-wistia")  # fallback if not set
 
-def fetch_all_media_metadata(per_page=100, max_pages=3):
+def fetch_all_media_metadata(per_page=100):
     page = 1
     all_media = []
 
@@ -23,7 +23,7 @@ def fetch_all_media_metadata(per_page=100, max_pages=3):
         "Authorization": f"Bearer {WISTIA_API_TOKEN}"
     }
 
-    while page <= max_pages:
+    while True:
         print(f"Fetching page {page}...")
         response = requests.get(
             BASE_URL,

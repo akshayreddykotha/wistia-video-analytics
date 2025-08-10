@@ -1,20 +1,20 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" version="28.0.7">
   <diagram name="Wistia Video Analytics Schema" id="1UHDcKMVfNVq5Xud_P4H">
-    <mxGraphModel dx="925" dy="546" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+    <mxGraphModel dx="1123" dy="663" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-1" value="dim_media" style="shape=swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="60" y="60" width="200" height="180" as="geometry" />
+          <mxGeometry x="60" y="60" width="160" height="170" as="geometry" />
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-2" value="media_id (PK)" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-1" vertex="1">
           <mxGeometry x="10" y="40" width="180" height="30" as="geometry" />
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-3" value="name&lt;div&gt;duration&lt;/div&gt;&lt;div&gt;created_at&lt;/div&gt;&lt;div&gt;type&lt;/div&gt;&lt;div&gt;hashed_id&lt;/div&gt;&lt;div&gt;updated_at&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-1" vertex="1">
-          <mxGeometry x="10" y="60" width="180" height="100" as="geometry" />
+          <mxGeometry x="10" y="60" width="130" height="100" as="geometry" />
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-4" value="dim_visitor" style="shape=swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="610" y="40" width="200" height="180" as="geometry" />
+          <mxGeometry x="740" y="335" width="200" height="180" as="geometry" />
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-5" value="visitor_key (PK)" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-4" vertex="1">
           <mxGeometry x="10" y="40" width="180" height="30" as="geometry" />
@@ -23,30 +23,39 @@
           <mxGeometry x="10" y="70" width="180" height="90" as="geometry" />
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-7" value="fact_media_engagement" style="shape=swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="90" y="460" width="280" height="200" as="geometry">
+          <mxGeometry x="390" y="55" width="210" height="200" as="geometry">
             <mxRectangle x="200" y="300" width="170" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-8" value="media_id (FK), visitor_id (FK)" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-7" vertex="1">
           <mxGeometry x="10" y="40" width="260" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="nfV7VkWr2vx_3Qyszl8C-9" value="&amp;nbsp;(PK)&amp;nbsp;&lt;div&gt;watch_time&lt;/div&gt;&lt;div&gt;percent_viewed&lt;/div&gt;&lt;div&gt;timestamp&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-7" vertex="1">
+        <mxCell id="nfV7VkWr2vx_3Qyszl8C-9" value="received_at (timestamp)&lt;br&gt;&lt;div&gt;duration&lt;/div&gt;&lt;div&gt;watch_time&lt;/div&gt;&lt;div&gt;percent_viewed&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-7" vertex="1">
           <mxGeometry x="10" y="90" width="260" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="nfV7VkWr2vx_3Qyszl8C-10" style="endArrow=block;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="nfV7VkWr2vx_3Qyszl8C-1" target="nfV7VkWr2vx_3Qyszl8C-12" edge="1">
+        <mxCell id="nfV7VkWr2vx_3Qyszl8C-10" style="endArrow=block;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="nfV7VkWr2vx_3Qyszl8C-1" target="nfV7VkWr2vx_3Qyszl8C-7" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="nfV7VkWr2vx_3Qyszl8C-11" style="endArrow=block;html=1;" parent="1" source="nfV7VkWr2vx_3Qyszl8C-4" target="nfV7VkWr2vx_3Qyszl8C-12" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="nfV7VkWr2vx_3Qyszl8C-11" style="endArrow=block;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="nfV7VkWr2vx_3Qyszl8C-12" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="740" y="450" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-12" value="fact_events" style="shape=swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="340" y="195" width="200" height="230" as="geometry" />
+          <mxGeometry x="395" y="330" width="200" height="230" as="geometry" />
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-13" value="engagement_id(PK)" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-12" vertex="1">
           <mxGeometry x="10" y="40" width="180" height="30" as="geometry" />
         </mxCell>
         <mxCell id="nfV7VkWr2vx_3Qyszl8C-14" value="&lt;div&gt;visitor_key (FK)&lt;/div&gt;&lt;div&gt;event_key (FK)&lt;/div&gt;&lt;div&gt;received_at (timestamp)&lt;/div&gt;&lt;div&gt;percent_viewed&lt;/div&gt;&lt;div&gt;ip&lt;/div&gt;&lt;div&gt;country&lt;/div&gt;&lt;div&gt;media_id (FK)&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;media_url&lt;/span&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;" parent="nfV7VkWr2vx_3Qyszl8C-12" vertex="1">
           <mxGeometry x="10" y="70" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="78r1vS6MGrYdpDyTRteB-6" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="nfV7VkWr2vx_3Qyszl8C-12">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="410" as="sourcePoint" />
+            <mxPoint x="495" y="260" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
