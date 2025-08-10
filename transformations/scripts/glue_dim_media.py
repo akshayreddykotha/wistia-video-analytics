@@ -1,4 +1,5 @@
 import sys
+import boto3
 from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, current_date
