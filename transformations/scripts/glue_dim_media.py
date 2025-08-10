@@ -20,7 +20,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # ====== Read Raw JSON from S3 ======
-metadata_key = f"s3://ak-wistia/raw_data/media/s3_keys/latest_media_file.json"  # example key where the pointer is stored
+metadata_key = "raw_data/media/s3_keys/latest_media_file.json"  # example key where the pointer is stored
 
 # Initialize boto3 S3 client
 s3 = boto3.client("s3")
