@@ -1,5 +1,6 @@
 import sys
 import boto3
+import json
 from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, current_date
@@ -36,7 +37,7 @@ if not latest_file_key:
     raise Exception("latest_s3_key not found in metadata JSON")
 
 # Full S3 path to latest JSON file - Implementing SCD1
-latest_file_s3_path = f"s3://{source_bucket}/{latest_file_key}"
+raw_path = f"s3://{source_bucket}/{latest_file_key}"
 df_raw = spark.read.json(raw_path, multiLine=True)
 
 # ====== Flatten & Select Required Columns ======
