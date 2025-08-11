@@ -54,7 +54,7 @@ df_dim_media = df_raw.select(
 # ====== Write to Parquet in Process Folder ======
 target_path = f"s3://{target_bucket}/processed/dim_media/"
 df_dim_media.write \
-    .mode("append") \
+    .mode("overwrite") \
     .partitionBy("load_date") \
     .parquet(target_path)
 
