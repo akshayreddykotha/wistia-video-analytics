@@ -22,6 +22,9 @@ PER_PAGE = 100
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # seconds
 
+s3 = boto3.client("s3")
+LATEST_FILE_KEY = "raw_data/events/s3_keys/latest_event_file.json"
+
 def fetch_all_events(per_page=PER_PAGE, max_pages=MAX_PAGES, media_id=None, received_after=None):
     page = 1
     all_events = []
@@ -81,6 +84,12 @@ def upload_json_to_s3(data, bucket, filename):
     s3.upload_fileobj(json_buffer, bucket, filename)
     print(f"Uploaded to S3: s3://{bucket}/{filename}")
 
+def update_latest_file_pointer(file_key=None):
+    content = {"latest_s3_key": file_key or []}
+    json_buffer = BytesIO(json.dumps(content, indent=2).encode("utf-8"))
+    s3.upload_fileobj(json_buffer, S3_BUCKET_NAME, LATEST_FILE_KEY) #uploads the latest file or [] to the latest_event_file.json
+    print(f"Updated latest_event_file.json: {file_key or []}")
+
 def lambda_handler(event, context):
     total_events = []
     try:
@@ -92,10 +101,16 @@ def lambda_handler(event, context):
         for media_id in MEDIA_IDS_FILTER:
             events = fetch_all_events(media_id=media_id, received_after=received_after)
             total_events.extend(events)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"raw_data/events/wistia_events_{timestamp}.json"
-
-        upload_json_to_s3(total_events, S3_BUCKET_NAME, filename)
+        
+        if total_events:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"raw_data/events/wistia_events_{timestamp}.json"
+            upload_json_to_s3(total_events, S3_BUCKET_NAME, filename)
+        
+        else:
+            # No events, update pointer to empty list
+            update_latest_file_pointer(None)
+            message = "No new events found for today. No file uploaded."
 
         return {
             "statusCode": 200,
@@ -107,6 +122,7 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(f"Error: {e}")
+        update_latest_file_pointer(None)
         return {
             "statusCode": 500,
             "body": json.dumps({"error": str(e)})

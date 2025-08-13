@@ -1,4 +1,6 @@
 import sys
+import boto3
+import json
 from awsglue.utils import getResolvedOptions
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, current_date
@@ -18,9 +20,27 @@ spark = SparkSession.builder \
     .appName("FactEventsETL") \
     .getOrCreate()
 
-# ====== Read Raw JSON from S3 ======
-raw_path = f"s3://{source_bucket}/raw_data/events/"
-df_raw = spark.read.json(raw_path, multiLine=True)
+# ====== Read Latest S3 Key from metadata ======
+metadata_key = "raw_data/events/s3_keys/latest_event_file.json"
+s3 = boto3.client("s3")
+
+try:
+    obj = s3.get_object(Bucket=source_bucket, Key=metadata_key)
+    content = obj['Body'].read().decode('utf-8')
+    metadata = json.loads(content)
+    latest_file_key = metadata.get("latest_s3_key")
+except s3.exceptions.NoSuchKey:
+    latest_file_key = None
+
+if not latest_file_key:
+    print("No new event file found. Skipping ETL run.")
+    spark.stop()
+    sys.exit(0)
+
+# Full S3 path to the latest JSON file
+latest_file_s3_path = f"s3://{source_bucket}/{latest_file_key}"
+# ====== Read Raw JSON from latest file ======
+df_raw = spark.read.json(latest_file_s3_path, multiLine=True)
 
 # ====== Flatten & Select Required Columns ======
 df_fact_events = df_raw.select(

@@ -1,0 +1,261 @@
+{
+    "Comment": "Orchestrate Wistia pipeline: ingest media -> transform dim_media -> crawl dim_media -> ingest events -> transform fact_events -> crawl fact_events -> transform fact_media_engagement -> crawl fact_media_engagement",
+    "StartAt": "InvokeIngestMediaLambda",
+    "States": {
+        "InvokeIngestMediaLambda": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": "arn:aws:lambda:us-west-2:564496105175:function:ingestionWistiaMedia",
+                "Payload.$": "$"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.ServiceException",
+                        "Lambda.AWSLambdaException",
+                        "Lambda.SdkClientException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 5,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "RunTransformDimMediaGlueJob"
+        },
+        "RunTransformDimMediaGlueJob": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+                "JobName": "transformWistiaMedia",
+                "Arguments": {
+                    "--SOURCE_BUCKET": "ak-wistia",
+                    "--TARGET_BUCKET": "ak-wistia"
+                }
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Glue.ServiceException",
+                        "Glue.EntityNotFoundException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 10,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "RunCrawlerDimMedia"
+        },
+        "RunCrawlerDimMedia": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+            "Parameters": {
+                "Name": "crawler-dim-media"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Glue.ServiceException",
+                        "Glue.EntityNotFoundException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 10,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "InvokeIngestEventsLambda"
+        },
+        "InvokeIngestEventsLambda": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": "arn:aws:lambda:us-west-2:564496105175:function:ingestionWistiaEvents",
+                "Payload.$": "$"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Lambda.ServiceException",
+                        "Lambda.AWSLambdaException",
+                        "Lambda.SdkClientException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 5,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "RunTransformFactEventsGlueJob"
+        },
+        "RunTransformFactEventsGlueJob": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+                "JobName": "transformWistiaEvents",
+                "Arguments": {
+                    "--SOURCE_BUCKET": "ak-wistia",
+                    "--TARGET_BUCKET": "ak-wistia"
+                }
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Glue.ServiceException",
+                        "Glue.EntityNotFoundException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 10,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "RunCrawlerFactEvents"
+        },
+        "RunCrawlerFactEvents": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+            "Parameters": {
+                "Name": "crawler-fact-events"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Glue.ServiceException",
+                        "Glue.EntityNotFoundException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 10,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "RunTransformFactMediaEngagementGlueJob"
+        },
+        "RunTransformFactMediaEngagementGlueJob": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+                "JobName": "transformWistiaMediaEngagement",
+                "Arguments": {
+                    "--TARGET_BUCKET": "ak-wistia"
+                }
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Glue.ServiceException",
+                        "Glue.EntityNotFoundException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 10,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "RunCrawlerFactMediaEngagement"
+        },
+        "RunCrawlerFactMediaEngagement": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+            "Parameters": {
+                "Name": "crawler-fact-media-engagement"
+            },
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "Glue.ServiceException",
+                        "Glue.EntityNotFoundException",
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 10,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "PipelineFailed"
+                }
+            ],
+            "Next": "PipelineSucceeded"
+        },
+        "PipelineFailed": {
+            "Type": "Fail",
+            "Cause": "Pipeline failed. Check logs of the failed step.",
+            "Error": "WistiaPipelineFailure"
+        },
+        "PipelineSucceeded": {
+            "Type": "Succeed"
+        }
+    }
+}
