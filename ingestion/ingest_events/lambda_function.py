@@ -110,7 +110,8 @@ def lambda_handler(event, context):
         
         else:
             # No events, update pointer to empty list
-            update_latest_file_pointer(None)
+            filename=None
+            update_latest_file_pointer(filename)
             message = "No new events found for today. No file uploaded."
 
         return {
