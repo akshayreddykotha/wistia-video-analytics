@@ -36,7 +36,7 @@ if not latest_file_key:
     print("No new event file found. Skipping ETL run.")
     spark.stop()
     print("Moving to next step with skipped Glue job...")
-
+    sys.exit(0)  # Exit gracefully so Step Functions sees success
 
 # Full S3 path to the latest JSON file
 latest_file_s3_path = f"s3://{source_bucket}/{latest_file_key}"
