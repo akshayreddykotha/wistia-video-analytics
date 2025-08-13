@@ -88,7 +88,7 @@ def update_latest_file_pointer(file_key=None):
     content = {"latest_s3_key": file_key}
     json_buffer = BytesIO(json.dumps(content, indent=2).encode("utf-8"))
     s3.upload_fileobj(json_buffer, S3_BUCKET_NAME, LATEST_FILE_KEY) #uploads the latest file or [] to the latest_event_file.json
-    print(f"Updated latest_event_file.json: {file_key or ""}")
+    print(f"Updated latest_event_file.json: {file_key}")
 
 def lambda_handler(event, context):
     total_events = []
