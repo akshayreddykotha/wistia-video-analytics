@@ -85,10 +85,10 @@ def upload_json_to_s3(data, bucket, filename):
     print(f"Uploaded to S3: s3://{bucket}/{filename}")
 
 def update_latest_file_pointer(file_key=None):
-    content = {"latest_s3_key": file_key or []}
+    content = {"latest_s3_key": file_key}
     json_buffer = BytesIO(json.dumps(content, indent=2).encode("utf-8"))
     s3.upload_fileobj(json_buffer, S3_BUCKET_NAME, LATEST_FILE_KEY) #uploads the latest file or [] to the latest_event_file.json
-    print(f"Updated latest_event_file.json: {file_key or []}")
+    print(f"Updated latest_event_file.json: {file_key or ""}")
 
 def lambda_handler(event, context):
     total_events = []
@@ -106,6 +106,7 @@ def lambda_handler(event, context):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"raw_data/events/wistia_events_{timestamp}.json"
             upload_json_to_s3(total_events, S3_BUCKET_NAME, filename)
+            update_latest_file_pointer(filename)
         
         else:
             # No events, update pointer to empty list

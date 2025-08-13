@@ -1,5 +1,5 @@
 # Transform Fact Events
-name: Deploy AWS Glue Job
+name: Deploy AWS Glue Job - Transform Fact Events
 
 on:
   push:
