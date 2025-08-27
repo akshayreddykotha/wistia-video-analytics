@@ -14,6 +14,7 @@ The pipeline is built using AWS-managed services for scalability, cost efficienc
 * **AWS Glue Crawlers** – Automatic schema detection and table creation in AWS Glue Data Catalog.
 * **Amazon S3** – Centralized storage for raw and processed datasets.
 * **AWS Step Functions** – Orchestration of the full workflow from ingestion to transformation and catalog updates.
+* **AWS EventBridge** - Schedule the Step functions or individual services for batch ingestion, transformation and data table availability.
 * **Amazon Athena** – Serverless SQL queries for processed datasets.
 
 ## Architecture Diagram
@@ -63,7 +64,10 @@ flowchart TD
   * Media ingestion → Media dimension transform → Events ingestion → Events fact transform → Media engagement fact transform.
   * Added **Glue Crawlers** after each transform job for schema refresh.
 
-* We can now **run the pipeline once** manually and **schedule it** with EventBridge for recurring runs.
+* **EventBridge** schedules the state machine:
+  
+  * We **ran the pipeline once** manually and **scheduled it** with EventBridge for recurring runs.
+  * Made sure the events are captured for the entire UTC day from 00:00 to 23:59.
 
 ---
 
@@ -130,6 +134,25 @@ flowchart TD
 
 ---
 
+## 7-Day Run
+
+The pipeline was run using a Step Function that was scheduled using Amazon EventBridge at 23:50:00 UTC so that all the events occurred 
+after 00:00:00 UTC the same day will be extracted by the Ingest Events Data lambda function.
+
+Implemented **CloudWatch metrics** and alarms for ingestion successes, inovations by creating a custom dashboard: **WistiaPipelineHealth**. Some of the automatic dashboards that AWS provides are used to get to the custom dashboard.
+
+### Below is an overview of the runs:
+
+![Metrics 7-day run](docs/metrics-7-day-run-wistia.png)
+
+As seen above s3 object trend, one new object is added correponding to the raw data folder of `dim_media` table giving the latest snapshot per each new run.
+
+### Cost overview:
+
+![Cost overview](docs/cost-breakdown-wistia.png)
+
+Running glue job is the only thing that is not free in using AWS Free Tier.
+
 ## Downstream Consumption
 
 * **Athena** provides a query interface for analysts to explore:
@@ -148,12 +171,18 @@ flowchart TD
   * Marketing analytics dashboards
   * Automated performance alerts
 
+## Alternatives to using Athena + Quicksight: Delta Lake. Is it suitable?
+
+Delta like has a lot of other features, like time travel, faster querying, faster writing, acid compliance. In this project's context, delta lake would be overkill for a few reasons:
+
+* Only one table (fact_events) is very dynamic and new data is streaming in only intermittently. So, having the latest state table for `fact_media_engagement` would be good as long as new data is added at the source. 
+* `dim_media` is very static so I made an assumption that I can apply SCD 1. A simpler way of handling version log of this table is to have different version of datasets based on the run date. And it has been implemented by storing the .json file with media-id data.
+* `fact_media_engagement` is built based on fact_events so if fact_events doesn’t have any new data, fact_media_engagement won’t have any changes except for when it is loaded.
+
 ## Possible Next Steps
 
 * Parallelize the data ingestion and subsequent transformation for different API endpoints.
 * Add **parameterized Step Functions input** to support ad-hoc date range runs.
-* Implement **CloudWatch metrics** and alarms for ingestion failures.
-* Optimize Glue jobs for cost by using **Pushdown predicates** and **DynamicFrames** selectively.
 * Extend the pipeline for **Wistia audience analytics** and **geo-level insights**.
 
 

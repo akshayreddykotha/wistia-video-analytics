@@ -42,5 +42,5 @@ jobs:
           zip_file: ingestion/ingest_events/lambda_function.zip
           role: arn:aws:iam::564496105175:role/lambda-execution-role
           handler: lambda_function.lambda_handler
-          runtime: python3.9
+          runtime: python3.13
           environment: "S3_BUCKET=ak-wistia, WISTIA_API_TOKEN=${{ secrets.WISTIA_API_TOKEN }}"
