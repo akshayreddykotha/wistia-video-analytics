@@ -1,4 +1,4 @@
-name: Deploy AWS Glue Job
+name: Deploy AWS Glue Job - Transform dim_media
 
 on:
   push:

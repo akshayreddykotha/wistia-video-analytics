@@ -1,5 +1,5 @@
 # Load data into dimensional model table: Fact Media Engagement
-name: Deploy AWS Glue Job
+name: Deploy AWS Glue Job - Transform Fact Media Engagement
 
 on:
   push:
