@@ -17,6 +17,12 @@ The pipeline is built using AWS-managed services for scalability, cost efficienc
 * **AWS EventBridge** - Schedule the Step functions or individual services for batch ingestion, transformation and data table availability.
 * **Amazon Athena** – Serverless SQL queries for processed datasets.
 
+## Dimensional Model
+
+While exploring different API endpoints, the events API endpoint had a lot of data useful for the media engagament table, so, it was chosen instead of the visitors endpoint.
+
+![Dimensional Model](docs/dimensional-data-model-schema.png)
+
 ## Architecture Diagram
 
 ![Architecture Diagram](docs/ak-wistia-video-analytics-architecture.png)
